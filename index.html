@@ -235,41 +235,70 @@ function fightRobots(){
       flex-direction:column;
       align-items:center;
       justify-content:center;
-      font-size:30px;
+      font-size:28px;
       z-index:9999;
+      overflow:hidden;
     ">
       <div id="battleText">⚔️ The Revolution Begins...</div>
-      <div id="battleVisual" style="font-size:60px; margin-top:20px;">
-        🧑‍🚀🧑‍🚀🧑‍🚀  ⚡  🤖🤖🤖
+
+      <div style="font-size:70px; margin:20px;">
+        🧑‍🚀🧑‍🚀🧑‍🚀  ⚡  🤖👑
+      </div>
+
+      <div style="width:300px; background:#333; height:20px;">
+        <div id="robotHealth" style="
+          width:100%;
+          height:100%;
+          background:red;
+        "></div>
       </div>
     </div>
   `;
 
-  let stage = 0;
+  let health = 100;
+  const healthBar = document.getElementById("robotHealth");
+  const battleText = document.getElementById("battleText");
+  const scene = document.getElementById("battleScene");
 
-  const battleSteps = [
-    "🔫 You fire the Ray Gun!",
-    "⚡ Plasma blasts hit the robots!",
-    "🤖 Robots counter attack!",
-    "🛡 Your army pushes forward!",
-    "💥 Massive explosion!",
-    "🏆 The robots are defeated!"
-  ];
+  const battleInterval = setInterval(() => {
 
-  const interval = setInterval(() => {
-    stage++;
-    if(stage < battleSteps.length){
-      document.getElementById("battleText").innerText =
-        battleSteps[stage];
-    } else {
-      clearInterval(interval);
-      setTimeout(() => {
-        document.getElementById("battleScene").remove();
-        document.getElementById("final").innerText =
-          "🏆 Victory! The planet is free thanks to your revolution!";
-      }, 2000);
+    // Laser flash
+    scene.style.background = "darkred";
+    setTimeout(() => scene.style.background = "black", 150);
+
+    // Damage robot
+    health -= Math.floor(Math.random() * 15) + 5;
+    if(health < 0) health = 0;
+    healthBar.style.width = health + "%";
+
+    if(health > 60){
+      battleText.innerText = "🔫 Plasma blasts hit the Boss Robot!";
+    } 
+    else if(health > 30){
+      battleText.innerText = "🤖 The Boss Robot is weakening!";
+    } 
+    else if(health > 0){
+      battleText.innerText = "💥 Massive explosions everywhere!";
+      scene.style.transform = "translate(5px,5px)";
+      setTimeout(()=>scene.style.transform="translate(0,0)",100);
     }
-  }, 1500);
+
+    if(health <= 0){
+      clearInterval(battleInterval);
+      battleText.innerText = "💀 The Boss Robot falls!";
+      healthBar.style.background = "gray";
+
+      setTimeout(()=>{
+        scene.style.background = "white";
+        setTimeout(()=>{
+          scene.remove();
+          document.getElementById("final").innerText =
+            "🏆 VICTORY! The revolution succeeds. The planet is free!";
+        },500);
+      },2000);
+    }
+
+  }, 1000);
 }
 
 renderElements();
