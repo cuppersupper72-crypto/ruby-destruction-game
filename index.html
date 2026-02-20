@@ -1,168 +1,196 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Ruby: Black Hole Saga</title>
+  <title>Ruby Saga Ultimate</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
-      font-family: Arial, sans-serif;
+      font-family: Arial;
       text-align: center;
       background: black;
       color: white;
       padding: 20px;
-      transition: background 1s;
+      overflow-x: hidden;
     }
 
     #ruby {
       font-size: 70px;
       margin: 20px;
-      transition: transform 0.3s;
-    }
-
-    button {
-      margin: 6px;
-      padding: 10px 15px;
-      border-radius: 8px;
-      border: none;
-      font-size: 16px;
-      cursor: pointer;
-    }
-
-    #hint {
-      margin-top: 15px;
-      font-style: italic;
-      color: #ffaaaa;
+      transition: transform 0.1s;
     }
 
     .shake {
-      animation: shake 0.5s infinite;
+      animation: shake 0.3s infinite;
     }
 
     @keyframes shake {
       0% { transform: translate(2px, 2px); }
-      25% { transform: translate(-2px, 2px); }
-      50% { transform: translate(2px, -2px); }
-      75% { transform: translate(-2px, -2px); }
-      100% { transform: translate(2px, 2px); }
+      25% { transform: translate(-2px, -3px); }
+      50% { transform: translate(3px, -1px); }
+      75% { transform: translate(-1px, 2px); }
+      100% { transform: translate(2px, -2px); }
     }
 
-    .lightning {
-      background: white !important;
-      color: black !important;
+    .flash {
+      animation: flash 0.2s infinite alternate;
+    }
+
+    @keyframes flash {
+      from { background: black; }
+      to { background: purple; }
+    }
+
+    .element {
+      display: inline-block;
+      padding: 10px 15px;
+      margin: 5px;
+      background: crimson;
+      border-radius: 8px;
+      cursor: grab;
+    }
+
+    #combineBox {
+      width: 200px;
+      height: 100px;
+      margin: 20px auto;
+      border: 3px dashed white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    button {
+      padding: 10px;
+      margin: 5px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
 
-<h1>💎 The Indestructible Ruby</h1>
+<h1>💎 Ruby Saga Ultimate</h1>
 <div id="ruby">💎</div>
-<p id="message">Nothing can destroy the Ruby...</p>
 
-<h3>Combine Elements</h3>
-
-<button onclick="add('gravity')">🌌 Gravity</button>
-<button onclick="add('dark')">🌑 Dark Matter</button>
-<button onclick="add('energy')">⚡ Energy</button>
-<button onclick="add('fire')">🔥 Fire</button>
-
-<br>
-<button onclick="combine()">Combine</button>
-
-<p id="hint"></p>
+<h3>Drag Two Elements Into The Box</h3>
+<div id="elements"></div>
+<div id="combineBox">Drop Here</div>
+<p id="message">The ruby feels unstoppable...</p>
 
 <script>
+let inventory = ["fire", "energy", "gravity", "dark"];
 let selected = [];
-let stage = 1;
-let robotHealth = 100;
+let supplies = false;
+let army = false;
 
-function add(element){
-  if(selected.length < 2){
-    selected.push(element);
+function renderElements() {
+  const container = document.getElementById("elements");
+  container.innerHTML = "";
+  inventory.forEach(el => {
+    const div = document.createElement("div");
+    div.className = "element";
+    div.innerText = el;
+    div.draggable = true;
+    div.ondragstart = e => {
+      e.dataTransfer.setData("text", el);
+    };
+    container.appendChild(div);
+  });
+}
+
+document.getElementById("combineBox").ondragover = e => {
+  e.preventDefault();
+};
+
+document.getElementById("combineBox").ondrop = e => {
+  e.preventDefault();
+  const el = e.dataTransfer.getData("text");
+  selected.push(el);
+  if (selected.length === 2) {
+    combine();
+    selected = [];
+  }
+};
+
+function combine() {
+  const combo = selected.sort().join("-");
+
+  if (combo === "energy-fire") addElement("plasma");
+  else if (combo === "dark-gravity") addElement("blackhole");
+  else if (combo === "energy-plasma") addElement("supercharge");
+  else if (combo === "blackhole-supercharge") destroyRuby();
+  else document.getElementById("message").innerText = "Nothing formed...";
+}
+
+function addElement(newEl) {
+  if (!inventory.includes(newEl)) {
+    inventory.push(newEl);
     document.getElementById("message").innerText =
-      "Selected: " + selected.join(" + ");
+      "New element discovered: " + newEl;
+    renderElements();
   }
 }
 
-function combine(){
-  if(selected.length < 2){
-    showHint("You must combine two elements.");
-    return;
-  }
-
-  let combo = selected.sort().join("-");
-
-  if(stage === 1){
-    if(combo === "dark-gravity"){
-      createBlackHole();
-    } else {
-      showHint("The Ruby resists... maybe something cosmic?");
-    }
-  }
-
-  selected = [];
-}
-
-function showHint(text){
-  document.getElementById("hint").innerText = text;
-}
-
-function createBlackHole(){
-  showHint("🕳️ A BLACK HOLE FORMS!");
-  let ruby = document.getElementById("ruby");
-
+function destroyRuby() {
+  const ruby = document.getElementById("ruby");
   ruby.classList.add("shake");
+  document.body.classList.add("flash");
+  document.getElementById("message").innerText =
+    "The black hole destabilizes the Ruby...";
 
   setTimeout(() => {
-    document.body.classList.add("lightning");
-  }, 500);
-
-  setTimeout(() => {
-    ruby.innerText = "🕳️";
-    document.body.classList.remove("lightning");
-  }, 1000);
-
-  setTimeout(() => {
-    stage = 2;
-    nextPlanet();
-  }, 2000);
+    ruby.classList.remove("shake");
+    document.body.classList.remove("flash");
+    ruby.innerText = "💥";
+    document.getElementById("message").innerText =
+      "The Ruby collapses! A portal opens!";
+    setTimeout(nextPlanet, 2000);
+  }, 3000);
 }
 
-function nextPlanet(){
+function nextPlanet() {
   document.body.style.background = "darkblue";
   document.getElementById("ruby").innerText = "🪐";
+  document.getElementById("elements").innerHTML = "";
+  document.getElementById("combineBox").style.display = "none";
   document.getElementById("message").innerText =
-    "You are on a distant planet. Evil robots attack!";
-  document.getElementById("hint").innerText = "";
+    "Evil robots threaten this world!";
 
   document.body.innerHTML += `
-    <h3>Build Your Defense</h3>
-    <button onclick="buildPlasma()">🔫 Build Plasma Cannon</button>
-    <button onclick="buildArmy()">🪖 Gather Army</button>
-    <div id="battle"></div>
+    <h3>Mission</h3>
+    <button onclick="collectSupplies()">Collect Plasma Supplies</button>
+    <button onclick="visitVillage()">Visit Villages</button>
+    <button onclick="fightRobots()">Fight Robots</button>
+    <p id="story"></p>
   `;
 }
 
-function buildPlasma(){
-  document.getElementById("battle").innerHTML =
-    "🔫 Plasma Cannon ready! Robots weakened!";
-  robotHealth -= 50;
-  checkBattle();
+function collectSupplies() {
+  supplies = true;
+  document.getElementById("story").innerText =
+    "You collected rare crystals and built a plasma cannon!";
 }
 
-function buildArmy(){
-  document.getElementById("battle").innerHTML =
-    "🪖 Army joins the fight!";
-  robotHealth -= 50;
-  checkBattle();
+function visitVillage() {
+  army = true;
+  document.getElementById("story").innerText =
+    "Villages unite under your command. You now have an army!";
 }
 
-function checkBattle(){
-  if(robotHealth <= 0){
-    document.getElementById("battle").innerHTML =
-      "🏆 You defeated the robots and saved the planet!";
+function fightRobots() {
+  if (supplies && army) {
+    document.getElementById("story").innerText =
+      "⚔️ With plasma fire and your army, the robots are defeated!";
+  } else {
+    document.getElementById("story").innerText =
+      "You need BOTH supplies AND an army!";
   }
 }
+
+renderElements();
 </script>
 
 </body>
 </html>
+      
