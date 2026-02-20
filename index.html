@@ -1,77 +1,69 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Ruby Destruction Game</title>
+  <title>Ruby: Black Hole Saga</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
       font-family: Arial, sans-serif;
       text-align: center;
-      background: linear-gradient(to bottom, #000000, #2b0000);
+      background: black;
       color: white;
       padding: 20px;
+      transition: background 1s;
     }
 
-    h1 { color: crimson; }
-
     #ruby {
-      font-size: 60px;
+      font-size: 70px;
       margin: 20px;
-      transition: transform 0.3s ease;
+      transition: transform 0.3s;
     }
 
     button {
       margin: 6px;
       padding: 10px 15px;
-      font-size: 16px;
       border-radius: 8px;
       border: none;
+      font-size: 16px;
       cursor: pointer;
-    }
-
-    #healthBarContainer {
-      width: 80%;
-      margin: 10px auto;
-      background: gray;
-      border-radius: 10px;
-    }
-
-    #healthBar {
-      height: 20px;
-      width: 100%;
-      background: red;
-      border-radius: 10px;
-      transition: width 0.5s ease;
     }
 
     #hint {
       margin-top: 15px;
-      color: #ffaaaa;
       font-style: italic;
+      color: #ffaaaa;
+    }
+
+    .shake {
+      animation: shake 0.5s infinite;
+    }
+
+    @keyframes shake {
+      0% { transform: translate(2px, 2px); }
+      25% { transform: translate(-2px, 2px); }
+      50% { transform: translate(2px, -2px); }
+      75% { transform: translate(-2px, -2px); }
+      100% { transform: translate(2px, 2px); }
+    }
+
+    .lightning {
+      background: white !important;
+      color: black !important;
     }
   </style>
 </head>
 <body>
 
 <h1>💎 The Indestructible Ruby</h1>
-
 <div id="ruby">💎</div>
+<p id="message">Nothing can destroy the Ruby...</p>
 
-<div id="healthBarContainer">
-  <div id="healthBar"></div>
-</div>
+<h3>Combine Elements</h3>
 
-<p id="message">The ruby stands strong.</p>
-
-<h3>Select Two Elements:</h3>
-
-<button onclick="addElement('fire')">🔥 Fire</button>
-<button onclick="addElement('war')">⚔️ War</button>
-<button onclick="addElement('metal')">🪨 Metal</button>
-<button onclick="addElement('energy')">⚡ Energy</button>
-<button onclick="addElement('wind')">🌪 Wind</button>
-<button onclick="addElement('ice')">❄️ Ice</button>
-<button onclick="addElement('earth')">🌍 Earth</button>
+<button onclick="add('gravity')">🌌 Gravity</button>
+<button onclick="add('dark')">🌑 Dark Matter</button>
+<button onclick="add('energy')">⚡ Energy</button>
+<button onclick="add('fire')">🔥 Fire</button>
 
 <br>
 <button onclick="combine()">Combine</button>
@@ -80,77 +72,97 @@
 
 <script>
 let selected = [];
-let rubyHealth = 100;
+let stage = 1;
+let robotHealth = 100;
 
-function addElement(element) {
-  if (selected.length < 2) {
+function add(element){
+  if(selected.length < 2){
     selected.push(element);
     document.getElementById("message").innerText =
       "Selected: " + selected.join(" + ");
   }
 }
 
-function combine() {
-  if (selected.length < 2) {
-    document.getElementById("hint").innerText =
-      "Select two elements!";
+function combine(){
+  if(selected.length < 2){
+    showHint("You must combine two elements.");
     return;
   }
 
   let combo = selected.sort().join("-");
-  let damage = 0;
 
-  if (combo === "fire-war") {
-    damage = 10;
-    showHint("🔥⚔️ Chaos burns the ruby!");
-  }
-  else if (combo === "metal-energy") {
-    damage = 20;
-    showHint("⚡🪨 A powerful device strikes!");
-  }
-  else if (combo === "ice-wind") {
-    damage = 15;
-    showHint("❄️🌪 A freezing storm hits!");
-  }
-  else if (combo === "earth-fire") {
-    damage = 25;
-    showHint("🌍🔥 Lava explosion!");
-  }
-  else if (combo === "energy-war") {
-    damage = 50;
-    showHint("⚡⚔️ Ultimate weapon unleashed!");
-  }
-  else {
-    showHint("Nothing happened...");
-  }
-
-  rubyHealth -= damage;
-  if (rubyHealth < 0) rubyHealth = 0;
-
-  updateHealthBar();
-
-  if (rubyHealth === 0) {
-    destroyRuby();
+  if(stage === 1){
+    if(combo === "dark-gravity"){
+      createBlackHole();
+    } else {
+      showHint("The Ruby resists... maybe something cosmic?");
+    }
   }
 
   selected = [];
 }
 
-function updateHealthBar() {
-  document.getElementById("healthBar").style.width =
-    rubyHealth + "%";
-}
-
-function showHint(text) {
+function showHint(text){
   document.getElementById("hint").innerText = text;
 }
 
-function destroyRuby() {
-  document.getElementById("ruby").innerText = "💥";
+function createBlackHole(){
+  showHint("🕳️ A BLACK HOLE FORMS!");
+  let ruby = document.getElementById("ruby");
+
+  ruby.classList.add("shake");
+
+  setTimeout(() => {
+    document.body.classList.add("lightning");
+  }, 500);
+
+  setTimeout(() => {
+    ruby.innerText = "🕳️";
+    document.body.classList.remove("lightning");
+  }, 1000);
+
+  setTimeout(() => {
+    stage = 2;
+    nextPlanet();
+  }, 2000);
+}
+
+function nextPlanet(){
+  document.body.style.background = "darkblue";
+  document.getElementById("ruby").innerText = "🪐";
   document.getElementById("message").innerText =
-    "🏆 YOU DESTROYED THE RUBY!";
+    "You are on a distant planet. Evil robots attack!";
+  document.getElementById("hint").innerText = "";
+
+  document.body.innerHTML += `
+    <h3>Build Your Defense</h3>
+    <button onclick="buildPlasma()">🔫 Build Plasma Cannon</button>
+    <button onclick="buildArmy()">🪖 Gather Army</button>
+    <div id="battle"></div>
+  `;
+}
+
+function buildPlasma(){
+  document.getElementById("battle").innerHTML =
+    "🔫 Plasma Cannon ready! Robots weakened!";
+  robotHealth -= 50;
+  checkBattle();
+}
+
+function buildArmy(){
+  document.getElementById("battle").innerHTML =
+    "🪖 Army joins the fight!";
+  robotHealth -= 50;
+  checkBattle();
+}
+
+function checkBattle(){
+  if(robotHealth <= 0){
+    document.getElementById("battle").innerHTML =
+      "🏆 You defeated the robots and saved the planet!";
+  }
 }
 </script>
 
 </body>
-</html>  
+</html>
