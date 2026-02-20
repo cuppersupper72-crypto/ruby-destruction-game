@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Ruby Saga Ultimate</title>
+  <title>Ruby Saga Revolution</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
@@ -10,32 +10,22 @@
       background: black;
       color: white;
       padding: 20px;
-      overflow-x: hidden;
       transition: background 0.5s;
     }
 
     #ruby {
       font-size: 70px;
       margin: 20px;
-      transition: transform 0.1s;
     }
 
-    .shake {
-      animation: shake 0.3s infinite;
-    }
-
+    .shake { animation: shake 0.3s infinite; }
     @keyframes shake {
-      0% { transform: translate(2px, 2px); }
-      25% { transform: translate(-2px, -3px); }
-      50% { transform: translate(3px, -1px); }
-      75% { transform: translate(-1px, 2px); }
-      100% { transform: translate(2px, -2px); }
+      0% { transform: translate(2px,2px); }
+      50% { transform: translate(-2px,-3px); }
+      100% { transform: translate(2px,-2px); }
     }
 
-    .flash {
-      animation: flash 0.2s infinite alternate;
-    }
-
+    .flash { animation: flash 0.2s infinite alternate; }
     @keyframes flash {
       from { background: black; }
       to { background: purple; }
@@ -43,137 +33,182 @@
 
     .element {
       display: inline-block;
-      padding: 10px 15px;
+      padding: 10px;
       margin: 5px;
       background: crimson;
       border-radius: 8px;
       cursor: pointer;
-      user-select: none;
     }
 
-    button {
-      padding: 10px;
-      margin: 5px;
-      border-radius: 6px;
-      border: none;
+    .house {
+      font-size: 40px;
       cursor: pointer;
+      margin: 10px;
+    }
+
+    #buildZone {
+      border: 3px dashed white;
+      padding: 20px;
+      margin: 20px auto;
+      width: 250px;
+      display: none;
     }
   </style>
 </head>
 <body>
 
-<h1>💎 Ruby Saga Ultimate</h1>
+<h1>💎 Ruby Saga Revolution</h1>
 <div id="ruby">💎</div>
-
 <h3>Tap Two Elements To Combine</h3>
 <div id="elements"></div>
 <p id="message">The ruby feels unstoppable...</p>
 
 <script>
-let inventory = ["fire", "energy", "gravity", "dark"];
+let inventory = ["fire","energy","gravity","dark","water"];
 let selected = [];
-let supplies = false;
-let army = false;
+let suppliesCollected = 0;
+let armyCount = 0;
+let rayBuilt = false;
 
-function renderElements() {
+function renderElements(){
   const container = document.getElementById("elements");
-  container.innerHTML = "";
-  inventory.forEach(el => {
-    const div = document.createElement("div");
-    div.className = "element";
-    div.innerText = el;
-    div.onclick = () => selectElement(el);
+  container.innerHTML="";
+  inventory.forEach(el=>{
+    const div=document.createElement("div");
+    div.className="element";
+    div.innerText=el;
+    div.onclick=()=>selectElement(el);
     container.appendChild(div);
   });
 }
 
-function selectElement(el) {
+function selectElement(el){
   selected.push(el);
-  document.getElementById("message").innerText =
-    "Selected: " + selected.join(" + ");
-
-  if (selected.length === 2) {
+  document.getElementById("message").innerText=
+    "Selected: "+selected.join(" + ");
+  if(selected.length===2){
     combine();
-    selected = [];
+    selected=[];
   }
 }
 
-function combine() {
-  const combo = selected.sort().join("-");
+function combine(){
+  const combo=selected.sort().join("-");
 
-  if (combo === "energy-fire") addElement("plasma");
-  else if (combo === "dark-gravity") addElement("blackhole");
-  else if (combo === "energy-plasma") addElement("supercharge");
-  else if (combo === "blackhole-supercharge") destroyRuby();
-  else document.getElementById("message").innerText = "Nothing formed...";
+  if(combo==="fire-water") addElement("steam");
+  else if(combo==="fire-gravity") addElement("lava");
+  else if(combo==="lava-water") addElement("obsidian");
+  else if(combo==="water-gravity") addElement("wave");
+  else if(combo==="energy-fire") addElement("plasma");
+  else if(combo==="dark-gravity") addElement("blackhole");
+  else if(combo==="energy-plasma") addElement("supercharge");
+  else if(combo==="blackhole-supercharge") destroyRuby();
+  else document.getElementById("message").innerText="Nothing formed...";
 }
 
-function addElement(newEl) {
-  if (!inventory.includes(newEl)) {
+function addElement(newEl){
+  if(!inventory.includes(newEl)){
     inventory.push(newEl);
-    document.getElementById("message").innerText =
-      "New element discovered: " + newEl;
+    document.getElementById("message").innerText=
+      "New element: "+newEl;
     renderElements();
   }
 }
 
-function destroyRuby() {
-  const ruby = document.getElementById("ruby");
+function destroyRuby(){
+  const ruby=document.getElementById("ruby");
   ruby.classList.add("shake");
   document.body.classList.add("flash");
-  document.getElementById("message").innerText =
-    "The black hole destabilizes the Ruby...";
+  document.getElementById("message").innerText=
+    "The Ruby destabilizes...";
 
-  setTimeout(() => {
+  setTimeout(()=>{
     ruby.classList.remove("shake");
     document.body.classList.remove("flash");
-    ruby.innerText = "💥";
-    document.getElementById("message").innerText =
-      "The Ruby collapses! A portal opens!";
-    setTimeout(nextPlanet, 2000);
-  }, 3000);
+    ruby.innerText="💥";
+    document.getElementById("message").innerText=
+      "A portal opens!";
+    setTimeout(nextPlanet,2000);
+  },3000);
 }
 
-function nextPlanet() {
-  document.body.style.background = "darkblue";
-  document.getElementById("ruby").innerText = "🪐";
-  document.getElementById("elements").innerHTML = "";
-  document.getElementById("message").innerText =
-    "Evil robots threaten this world!";
+function nextPlanet(){
+  document.body.style.background="darkblue";
+  document.getElementById("ruby").innerText="🪐";
+  document.getElementById("elements").innerHTML="";
+  document.getElementById("message").innerText=
+    "🤖 The robots are watching... Build a ray gun!";
 
-  document.body.innerHTML += `
-    <h3>Mission</h3>
-    <button onclick="collectSupplies()">Collect Plasma Supplies</button>
-    <button onclick="visitVillage()">Visit Villages</button>
-    <button onclick="fightRobots()">Fight Robots</button>
-    <p id="story"></p>
+  inventory=["metal","crystal","energy"];
+  renderElements();
+
+  document.body.innerHTML+=`
+    <div id="buildZone">Drop Supplies Here</div>
+    <div id="armySection" style="display:none;">
+      <h3>Recruit The Revolution</h3>
+      <div>
+        <span class="house" onclick="recruit()">🏠</span>
+        <span class="house" onclick="recruit()">🏠</span>
+        <span class="house" onclick="recruit()">🏠</span>
+      </div>
+      <p id="armyCount"></p>
+      <button onclick="fightRobots()">Fight Robots</button>
+      <p id="final"></p>
+    </div>
   `;
+
+  enableBuildZone();
 }
 
-function collectSupplies() {
-  supplies = true;
-  document.getElementById("story").innerText =
-    "You collected rare crystals and built a plasma cannon!";
+function enableBuildZone(){
+  const zone=document.getElementById("buildZone");
+  zone.style.display="block";
 }
 
-function visitVillage() {
-  army = true;
-  document.getElementById("story").innerText =
-    "Villages unite under your command. You now have an army!";
+function selectElement(el){
+  selected.push(el);
+  if(selected.length===2){
+    if(inventory.includes("metal") && !rayBuilt){
+      suppliesCollected++;
+      document.getElementById("message").innerText=
+        "Supplies added... The robots are watching.";
+      selected=[];
+      if(suppliesCollected>=2) buildRayGun();
+    } else {
+      combine();
+      selected=[];
+    }
+  }
 }
 
-function fightRobots() {
-  if (supplies && army) {
-    document.getElementById("story").innerText =
-      "⚔️ With plasma fire and your army, the robots are defeated!";
+function buildRayGun(){
+  rayBuilt=true;
+  document.getElementById("message").innerText=
+    "⚙️ Assembling Ray Gun...";
+  setTimeout(()=>{
+    document.getElementById("message").innerText=
+      "🔫 Ray Gun Complete!";
+    document.getElementById("armySection").style.display="block";
+  },3000);
+}
+
+function recruit(){
+  armyCount++;
+  document.getElementById("armyCount").innerText=
+    "Army Size: "+armyCount;
+}
+
+function fightRobots(){
+  if(rayBuilt && armyCount>=3){
+    document.getElementById("final").innerText=
+      "⚔️ With your Ray Gun and army, the robots fall. The planet is saved!";
   } else {
-    document.getElementById("story").innerText =
-      "You need BOTH supplies AND an army!";
+    document.getElementById("final").innerText=
+      "You need a Ray Gun and more people!";
   }
 }
 
 renderElements();
 </script>
-
 </body>
 </html>
