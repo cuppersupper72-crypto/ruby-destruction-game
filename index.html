@@ -11,6 +11,7 @@
       color: white;
       padding: 20px;
       overflow-x: hidden;
+      transition: background 0.5s;
     }
 
     #ruby {
@@ -46,17 +47,8 @@
       margin: 5px;
       background: crimson;
       border-radius: 8px;
-      cursor: grab;
-    }
-
-    #combineBox {
-      width: 200px;
-      height: 100px;
-      margin: 20px auto;
-      border: 3px dashed white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      cursor: pointer;
+      user-select: none;
     }
 
     button {
@@ -73,9 +65,8 @@
 <h1>💎 Ruby Saga Ultimate</h1>
 <div id="ruby">💎</div>
 
-<h3>Drag Two Elements Into The Box</h3>
+<h3>Tap Two Elements To Combine</h3>
 <div id="elements"></div>
-<div id="combineBox">Drop Here</div>
 <p id="message">The ruby feels unstoppable...</p>
 
 <script>
@@ -91,27 +82,21 @@ function renderElements() {
     const div = document.createElement("div");
     div.className = "element";
     div.innerText = el;
-    div.draggable = true;
-    div.ondragstart = e => {
-      e.dataTransfer.setData("text", el);
-    };
+    div.onclick = () => selectElement(el);
     container.appendChild(div);
   });
 }
 
-document.getElementById("combineBox").ondragover = e => {
-  e.preventDefault();
-};
-
-document.getElementById("combineBox").ondrop = e => {
-  e.preventDefault();
-  const el = e.dataTransfer.getData("text");
+function selectElement(el) {
   selected.push(el);
+  document.getElementById("message").innerText =
+    "Selected: " + selected.join(" + ");
+
   if (selected.length === 2) {
     combine();
     selected = [];
   }
-};
+}
 
 function combine() {
   const combo = selected.sort().join("-");
@@ -153,7 +138,6 @@ function nextPlanet() {
   document.body.style.background = "darkblue";
   document.getElementById("ruby").innerText = "🪐";
   document.getElementById("elements").innerHTML = "";
-  document.getElementById("combineBox").style.display = "none";
   document.getElementById("message").innerText =
     "Evil robots threaten this world!";
 
@@ -193,4 +177,3 @@ renderElements();
 
 </body>
 </html>
-      
