@@ -4,54 +4,64 @@
   <title>Ruby Saga Revolution</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    body {
-      font-family: Arial;
-      text-align: center;
-      background: black;
-      color: white;
-      padding: 20px;
-      transition: background 0.5s;
+    body{
+      font-family:Arial;
+      text-align:center;
+      background:black;
+      color:white;
+      padding:20px;
+      transition:background 0.5s;
     }
 
-    #ruby {
-      font-size: 70px;
-      margin: 20px;
+    #ruby{font-size:70px;margin:20px;}
+
+    .shake{animation:shake 0.3s infinite;}
+    @keyframes shake{
+      0%{transform:translate(2px,2px);}
+      50%{transform:translate(-2px,-3px);}
+      100%{transform:translate(2px,-2px);}
     }
 
-    .shake { animation: shake 0.3s infinite; }
-    @keyframes shake {
-      0% { transform: translate(2px,2px); }
-      50% { transform: translate(-2px,-3px); }
-      100% { transform: translate(2px,-2px); }
+    .flash{animation:flash 0.2s infinite alternate;}
+    @keyframes flash{
+      from{background:black;}
+      to{background:purple;}
     }
 
-    .flash { animation: flash 0.2s infinite alternate; }
-    @keyframes flash {
-      from { background: black; }
-      to { background: purple; }
+    .element{
+      display:inline-block;
+      padding:10px;
+      margin:5px;
+      background:crimson;
+      border-radius:8px;
+      cursor:pointer;
     }
 
-    .element {
-      display: inline-block;
-      padding: 10px;
-      margin: 5px;
-      background: crimson;
-      border-radius: 8px;
-      cursor: pointer;
+    .house{
+      font-size:40px;
+      cursor:pointer;
+      margin:10px;
     }
 
-    .house {
-      font-size: 40px;
-      cursor: pointer;
-      margin: 10px;
+    #workbench{
+      margin:20px auto;
+      padding:15px;
+      border:2px solid white;
+      width:250px;
+      display:none;
     }
 
-    #buildZone {
-      border: 3px dashed white;
-      padding: 20px;
-      margin: 20px auto;
-      width: 250px;
-      display: none;
+    #progressBar{
+      width:0%;
+      height:15px;
+      background:lime;
+      margin-top:10px;
+    }
+
+    #progressContainer{
+      width:100%;
+      background:#333;
+      display:none;
     }
   </style>
 </head>
@@ -63,15 +73,25 @@
 <div id="elements"></div>
 <p id="message">The ruby feels unstoppable...</p>
 
+<div id="workbench">
+  <h3>🔧 Ray Gun Workbench</h3>
+  <p id="partsList"></p>
+  <button onclick="assemble()">Assemble Ray Gun</button>
+  <div id="progressContainer">
+    <div id="progressBar"></div>
+  </div>
+</div>
+
 <script>
-let inventory = ["fire","energy","gravity","dark","water"];
-let selected = [];
-let suppliesCollected = 0;
-let armyCount = 0;
-let rayBuilt = false;
+let inventory=["fire","energy","gravity","dark","water"];
+let selected=[];
+let planetStage=false;
+let rayParts=[];
+let armyCount=0;
+let rayBuilt=false;
 
 function renderElements(){
-  const container = document.getElementById("elements");
+  const container=document.getElementById("elements");
   container.innerHTML="";
   inventory.forEach(el=>{
     const div=document.createElement("div");
@@ -83,6 +103,11 @@ function renderElements(){
 }
 
 function selectElement(el){
+  if(planetStage && !rayBuilt){
+    addPart(el);
+    return;
+  }
+
   selected.push(el);
   document.getElementById("message").innerText=
     "Selected: "+selected.join(" + ");
@@ -94,7 +119,6 @@ function selectElement(el){
 
 function combine(){
   const combo=selected.sort().join("-");
-
   if(combo==="fire-water") addElement("steam");
   else if(combo==="fire-gravity") addElement("lava");
   else if(combo==="lava-water") addElement("obsidian");
@@ -109,8 +133,7 @@ function combine(){
 function addElement(newEl){
   if(!inventory.includes(newEl)){
     inventory.push(newEl);
-    document.getElementById("message").innerText=
-      "New element: "+newEl;
+    document.getElementById("message").innerText="New element: "+newEl;
     renderElements();
   }
 }
@@ -119,77 +142,73 @@ function destroyRuby(){
   const ruby=document.getElementById("ruby");
   ruby.classList.add("shake");
   document.body.classList.add("flash");
-  document.getElementById("message").innerText=
-    "The Ruby destabilizes...";
-
+  document.getElementById("message").innerText="The Ruby destabilizes...";
   setTimeout(()=>{
     ruby.classList.remove("shake");
     document.body.classList.remove("flash");
     ruby.innerText="💥";
-    document.getElementById("message").innerText=
-      "A portal opens!";
+    document.getElementById("message").innerText="A portal opens!";
     setTimeout(nextPlanet,2000);
   },3000);
 }
 
 function nextPlanet(){
+  planetStage=true;
   document.body.style.background="darkblue";
   document.getElementById("ruby").innerText="🪐";
-  document.getElementById("elements").innerHTML="";
   document.getElementById("message").innerText=
-    "🤖 The robots are watching... Build a ray gun!";
-
+    "🤖 Robots detected. Build a Ray Gun.";
   inventory=["metal","crystal","energy"];
   renderElements();
-
-  document.body.innerHTML+=`
-    <div id="buildZone">Drop Supplies Here</div>
-    <div id="armySection" style="display:none;">
-      <h3>Recruit The Revolution</h3>
-      <div>
-        <span class="house" onclick="recruit()">🏠</span>
-        <span class="house" onclick="recruit()">🏠</span>
-        <span class="house" onclick="recruit()">🏠</span>
-      </div>
-      <p id="armyCount"></p>
-      <button onclick="fightRobots()">Fight Robots</button>
-      <p id="final"></p>
-    </div>
-  `;
-
-  enableBuildZone();
+  document.getElementById("workbench").style.display="block";
 }
 
-function enableBuildZone(){
-  const zone=document.getElementById("buildZone");
-  zone.style.display="block";
-}
-
-function selectElement(el){
-  selected.push(el);
-  if(selected.length===2){
-    if(inventory.includes("metal") && !rayBuilt){
-      suppliesCollected++;
-      document.getElementById("message").innerText=
-        "Supplies added... The robots are watching.";
-      selected=[];
-      if(suppliesCollected>=2) buildRayGun();
-    } else {
-      combine();
-      selected=[];
-    }
+function addPart(part){
+  if(!rayParts.includes(part)){
+    rayParts.push(part);
+    document.getElementById("partsList").innerText=
+      "Parts: "+rayParts.join(", ");
   }
 }
 
-function buildRayGun(){
-  rayBuilt=true;
-  document.getElementById("message").innerText=
-    "⚙️ Assembling Ray Gun...";
-  setTimeout(()=>{
+function assemble(){
+  if(rayParts.length<3){
     document.getElementById("message").innerText=
-      "🔫 Ray Gun Complete!";
-    document.getElementById("armySection").style.display="block";
-  },3000);
+      "You need metal, crystal, and energy.";
+    return;
+  }
+
+  document.getElementById("message").innerText=
+    "⚙️ Assembling Ray Gun... Robots are watching.";
+  document.getElementById("progressContainer").style.display="block";
+
+  let progress=0;
+  const bar=document.getElementById("progressBar");
+  const interval=setInterval(()=>{
+    progress+=10;
+    bar.style.width=progress+"%";
+    if(progress>=100){
+      clearInterval(interval);
+      rayBuilt=true;
+      document.getElementById("message").innerText=
+        "🔫 Ray Gun Complete!";
+      startRecruitment();
+    }
+  },300);
+}
+
+function startRecruitment(){
+  document.body.innerHTML+=`
+    <h3>Recruit The Revolution</h3>
+    <div>
+      <span class="house" onclick="recruit()">🏠</span>
+      <span class="house" onclick="recruit()">🏠</span>
+      <span class="house" onclick="recruit()">🏠</span>
+    </div>
+    <p id="armyCount"></p>
+    <button onclick="fightRobots()">Fight Robots</button>
+    <p id="final"></p>
+  `;
 }
 
 function recruit(){
@@ -202,9 +221,9 @@ function fightRobots(){
   if(rayBuilt && armyCount>=3){
     document.getElementById("final").innerText=
       "⚔️ With your Ray Gun and army, the robots fall. The planet is saved!";
-  } else {
+  } else{
     document.getElementById("final").innerText=
-      "You need a Ray Gun and more people!";
+      "You need a Ray Gun and at least 3 recruits.";
   }
 }
 
