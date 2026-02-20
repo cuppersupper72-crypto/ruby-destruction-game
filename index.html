@@ -7,43 +7,47 @@
     body {
       font-family: Arial, sans-serif;
       text-align: center;
-      background: linear-gradient(to bottom, #000000, #1a0000);
+      background: linear-gradient(to bottom, #000000, #2b0000);
       color: white;
       padding: 20px;
     }
 
-    h1 {
-      color: crimson;
-    }
+    h1 { color: crimson; }
 
     #ruby {
       font-size: 60px;
       margin: 20px;
-      transition: transform 0.5s ease;
+      transition: transform 0.3s ease;
     }
 
     button {
-      margin: 8px;
-      padding: 12px 18px;
+      margin: 6px;
+      padding: 10px 15px;
       font-size: 16px;
       border-radius: 8px;
       border: none;
       cursor: pointer;
     }
 
-    button:hover {
-      opacity: 0.8;
+    #healthBarContainer {
+      width: 80%;
+      margin: 10px auto;
+      background: gray;
+      border-radius: 10px;
+    }
+
+    #healthBar {
+      height: 20px;
+      width: 100%;
+      background: red;
+      border-radius: 10px;
+      transition: width 0.5s ease;
     }
 
     #hint {
-      margin-top: 20px;
+      margin-top: 15px;
+      color: #ffaaaa;
       font-style: italic;
-      color: #ffcccb;
-    }
-
-    #message {
-      margin-top: 10px;
-      font-weight: bold;
     }
   </style>
 </head>
@@ -53,7 +57,11 @@
 
 <div id="ruby">💎</div>
 
-<p id="message">This ruby cannot be destroyed... yet.</p>
+<div id="healthBarContainer">
+  <div id="healthBar"></div>
+</div>
+
+<p id="message">The ruby stands strong.</p>
 
 <h3>Select Two Elements:</h3>
 
@@ -62,6 +70,8 @@
 <button onclick="addElement('metal')">🪨 Metal</button>
 <button onclick="addElement('energy')">⚡ Energy</button>
 <button onclick="addElement('wind')">🌪 Wind</button>
+<button onclick="addElement('ice')">❄️ Ice</button>
+<button onclick="addElement('earth')">🌍 Earth</button>
 
 <br>
 <button onclick="combine()">Combine</button>
@@ -70,6 +80,7 @@
 
 <script>
 let selected = [];
+let rubyHealth = 100;
 
 function addElement(element) {
   if (selected.length < 2) {
@@ -82,41 +93,64 @@ function addElement(element) {
 function combine() {
   if (selected.length < 2) {
     document.getElementById("hint").innerText =
-      "You must select two elements!";
+      "Select two elements!";
     return;
   }
 
   let combo = selected.sort().join("-");
+  let damage = 0;
 
   if (combo === "fire-war") {
-    document.getElementById("hint").innerText =
-      "🔥⚔️ You created CHAOS... but the ruby resists.";
+    damage = 10;
+    showHint("🔥⚔️ Chaos burns the ruby!");
   }
   else if (combo === "metal-energy") {
-    document.getElementById("hint").innerText =
-      "⚡🪨 You built a powerful machine... something bigger is forming.";
+    damage = 20;
+    showHint("⚡🪨 A powerful device strikes!");
+  }
+  else if (combo === "ice-wind") {
+    damage = 15;
+    showHint("❄️🌪 A freezing storm hits!");
+  }
+  else if (combo === "earth-fire") {
+    damage = 25;
+    showHint("🌍🔥 Lava explosion!");
   }
   else if (combo === "energy-war") {
-    document.getElementById("hint").innerText =
-      "⚡⚔️ Ultimate weapon unlocked!";
-      destroyRuby();
+    damage = 50;
+    showHint("⚡⚔️ Ultimate weapon unleashed!");
   }
   else {
-    document.getElementById("hint").innerText =
-      "Nothing happened. Try a different combination.";
+    showHint("Nothing happened...");
+  }
+
+  rubyHealth -= damage;
+  if (rubyHealth < 0) rubyHealth = 0;
+
+  updateHealthBar();
+
+  if (rubyHealth === 0) {
+    destroyRuby();
   }
 
   selected = [];
 }
 
+function updateHealthBar() {
+  document.getElementById("healthBar").style.width =
+    rubyHealth + "%";
+}
+
+function showHint(text) {
+  document.getElementById("hint").innerText = text;
+}
+
 function destroyRuby() {
-  const ruby = document.getElementById("ruby");
-  ruby.innerText = "💥";
-  ruby.style.transform = "scale(1.5)";
+  document.getElementById("ruby").innerText = "💥";
   document.getElementById("message").innerText =
-    "💥 The Ruby has been destroyed!";
+    "🏆 YOU DESTROYED THE RUBY!";
 }
 </script>
 
 </body>
-</html>
+</html>  
