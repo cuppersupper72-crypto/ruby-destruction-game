@@ -9,10 +9,71 @@ body{
   text-align:center;
   background:black;
   color:white;
-  padding:20px;
-  transition:background 0.5s;
+  margin:0;
+  overflow:hidden;
+  transition:background 0.3s;
 }
-#ruby{font-size:70px;margin:20px;}
+#ui{padding:10px;}
+#ruby{font-size:65px;margin:10px;}
+.element{
+  display:inline-block;
+  padding:8px;
+  margin:4px;
+  background:crimson;
+  border-radius:6px;
+  cursor:pointer;
+}
+#gameArea{
+  position:relative;
+  width:100%;
+  height:60vh;
+  background:darkblue;
+  display:none;
+  overflow:hidden;
+}
+#player{
+  position:absolute;
+  width:40px;
+  height:40px;
+  background:lime;
+  left:50px;
+  top:50px;
+}
+.house{
+  position:absolute;
+  width:50px;
+  height:50px;
+  background:brown;
+}
+#controls{
+  position:fixed;
+  bottom:15px;
+  left:50%;
+  transform:translateX(-50%);
+  display:none;
+}
+.control-btn{
+  width:60px;
+  height:60px;
+  margin:5px;
+  font-size:24px;
+  border:none;
+  border-radius:10px;
+  background:#444;
+  color:white;
+}
+.cutscene{
+  position:fixed;
+  top:0;left:0;
+  width:100%;height:100%;
+  background:black;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  flex-direction:column;
+  font-size:28px;
+  z-index:9999;
+}
 .shake{animation:shake 0.3s infinite;}
 @keyframes shake{
   0%{transform:translate(2px,2px);}
@@ -24,37 +85,34 @@ body{
   from{background:black;}
   to{background:purple;}
 }
-.element{
-  display:inline-block;
-  padding:10px;
-  margin:5px;
-  background:crimson;
-  border-radius:8px;
-  cursor:pointer;
-}
-.cutscene{
-  position:fixed;
-  top:0;left:0;
-  width:100%;height:100%;
-  background:black;
-  color:white;
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  align-items:center;
-  font-size:28px;
-  z-index:9999;
-}
 </style>
 </head>
 <body>
 
-<h1>💎 Ruby Saga Revolution</h1>
+<div id="ui">
+<h2>💎 Ruby Saga Revolution</h2>
 <div id="ruby">💎</div>
-<h3>Tap Two Elements To Combine</h3>
 <div id="elements"></div>
-<p id="message">The ruby feels unstoppable...</p>
+<p id="message">The ruby hums with power...</p>
 <p id="final"></p>
+<button onclick="fightRobots()">Fight Robots</button>
+</div>
+
+<div id="gameArea">
+  <div id="player"></div>
+  <div class="house" style="left:200px;top:120px;"></div>
+  <div class="house" style="left:350px;top:200px;"></div>
+  <div class="house" style="left:150px;top:300px;"></div>
+</div>
+
+<div id="controls">
+  <div><button class="control-btn" ontouchstart="moveUp()">⬆️</button></div>
+  <div>
+    <button class="control-btn" ontouchstart="moveLeft()">⬅️</button>
+    <button class="control-btn" ontouchstart="moveDown()">⬇️</button>
+    <button class="control-btn" ontouchstart="moveRight()">➡️</button>
+  </div>
+</div>
 
 <script>
 let inventory=["fire","water","energy","gravity","dark","air"];
@@ -62,6 +120,11 @@ let selected=[];
 let planetStage=false;
 let rayBuilt=false;
 let armyCount=0;
+let px=50, py=50;
+
+const player=document.getElementById("player");
+const gameArea=document.getElementById("gameArea");
+const controls=document.getElementById("controls");
 
 function renderElements(){
   const container=document.getElementById("elements");
@@ -76,15 +139,8 @@ function renderElements(){
 }
 
 function selectElement(el){
-  if(planetStage && !rayBuilt){
-    startRayCutscene();
-    return;
-  }
-
   selected.push(el);
-  document.getElementById("message").innerText=
-    "Selected: "+selected.join(" + ");
-
+  document.getElementById("message").innerText="Selected: "+selected.join(" + ");
   if(selected.length===2){
     combine();
     selected=[];
@@ -94,7 +150,6 @@ function selectElement(el){
 function combine(){
   const combo=selected.sort().join("-");
 
-  // Expanded crafting tree
   if(combo==="fire-water") addElement("steam");
   else if(combo==="fire-gravity") addElement("lava");
   else if(combo==="lava-water") addElement("obsidian");
@@ -110,10 +165,10 @@ function combine(){
   else document.getElementById("message").innerText="Nothing formed...";
 }
 
-function addElement(newEl){
-  if(!inventory.includes(newEl)){
-    inventory.push(newEl);
-    document.getElementById("message").innerText="New element: "+newEl;
+function addElement(el){
+  if(!inventory.includes(el)){
+    inventory.push(el);
+    document.getElementById("message").innerText="New element: "+el;
     renderElements();
   }
 }
@@ -122,12 +177,11 @@ function destroyRuby(){
   const ruby=document.getElementById("ruby");
   ruby.classList.add("shake");
   document.body.classList.add("flash");
-  document.getElementById("message") .innerText="The Ruby destabilizes...";
+  document.getElementById("message").innerText="The Ruby destabilizes!";
   setTimeout(()=>{
     ruby.classList.remove("shake");
     document.body.classList.remove("flash");
     ruby.innerText="💥";
-    document.getElementById("message").innerText="A portal opens!";
     setTimeout(nextPlanet,2000);
   },3000);
 }
@@ -136,120 +190,97 @@ function nextPlanet(){
   planetStage=true;
   document.body.style.background="darkblue";
   document.getElementById("ruby").innerText="🪐";
-  document.getElementById("message").innerText=
-    "🤖 Robots detected. Build a Ray Gun.";
+  document.getElementById("message").innerText="Build the Ray Gun!";
   inventory=["metal","crystal","energy"];
   renderElements();
+  gameArea.style.display="block";
+  controls.style.display="block";
+  startRayCutscene();
 }
 
 function startRayCutscene(){
-  if(rayBuilt) return;
-
-  document.body.innerHTML+=`
-    <div class="cutscene" id="rayScene">
-      <div id="rayText">⚙️ Gathering parts...</div>
-    </div>
-  `;
-
-  const steps=[
-    "⚙️ Assembling metal frame...",
-    "💎 Installing crystal core...",
-    "⚡ Charging with energy...",
-    "🔫 Ray Gun Activated!"
-  ];
-
-  let i=0;
-  const interval=setInterval(()=>{
-    i++;
-    if(i<steps.length){
-      document.getElementById("rayText").innerText=steps[i];
-    } else{
-      clearInterval(interval);
-      rayBuilt=true;
-      setTimeout(()=>{
-        document.getElementById("rayScene").remove();
-        startRecruitCutscene();
-      },1500);
-    }
-  },1500);
+  const scene=createScene("⚙️ Building Ray Gun...");
+  setTimeout(()=>scene.innerText="💎 Installing crystal core...",1500);
+  setTimeout(()=>scene.innerText="⚡ Charging weapon...",3000);
+  setTimeout(()=>{
+    scene.innerText="🔫 Ray Gun Complete!";
+    rayBuilt=true;
+  },4500);
+  setTimeout(()=>scene.remove(),6000);
 }
 
-function startRecruitCutscene(){
-  document.body.innerHTML+=`
-    <div class="cutscene" id="recruitScene">
-      <div id="recruitText">🏠 Visiting villages...</div>
-    </div>
-  `;
+function moveUp(){py-=15;update();}
+function moveDown(){py+=15;update();}
+function moveLeft(){px-=15;update();}
+function moveRight(){px+=15;update();}
 
-  const steps=[
-    "🧑 You speak of freedom...",
-    "👥 People begin to listen...",
-    "⚔️ They join your revolution!",
-    "🚀 Army Ready!"
-  ];
+function update(){
+  player.style.left=px+"px";
+  player.style.top=py+"px";
+  checkHouse();
+}
 
-  let i=0;
-  const interval=setInterval(()=>{
-    i++;
-    if(i<steps.length){
-      document.getElementById("recruitText").innerText=steps[i];
-    } else{
-      clearInterval(interval);
-      armyCount=3;
-      setTimeout(()=>{
-        document.getElementById("recruitScene").remove();
-        document.getElementById("message").innerText=
-          "Your army stands ready.";
-      },1500);
+function checkHouse(){
+  const houses=document.querySelectorAll(".house");
+  houses.forEach(h=>{
+    if(Math.abs(px-h.offsetLeft)<40 && Math.abs(py-h.offsetTop)<40){
+      recruitCutscene(h);
     }
-  },1500);
+  });
+}
+
+function recruitCutscene(house){
+  house.remove();
+  const scene=createScene("🏠 Speaking to villagers...");
+  setTimeout(()=>scene.innerText="🧑 They listen...",1500);
+  setTimeout(()=>scene.innerText="⚔️ They join the revolution!",3000);
+  setTimeout(()=>{
+    armyCount++;
+    scene.remove();
+    document.getElementById("message").innerText="Army: "+armyCount;
+  },4500);
 }
 
 function fightRobots(){
   if(!rayBuilt || armyCount<3){
-    document.getElementById("final").innerText=
-      "You need a Ray Gun and army.";
+    document.getElementById("final").innerText="You need Ray Gun + 3 recruits.";
     return;
   }
 
-  document.body.innerHTML+=`
-    <div id="battleScene" class="cutscene">
-      <div id="battleText">⚔️ The Final Battle Begins...</div>
-      <div style="margin:20px;font-size:60px;">🧑‍🚀🧑‍🚀🧑‍🚀 ⚡ 🤖👑</div>
-      <div style="width:300px;background:#333;height:20px;">
-        <div id="robotHealth" style="width:100%;height:100%;background:red;"></div>
-      </div>
+  const scene=createScene("⚔️ Final Battle!");
+  scene.innerHTML+=`
+    <div style="width:300px;background:#333;height:20px;margin-top:20px;">
+      <div id="hp" style="width:100%;height:100%;background:red;"></div>
     </div>
   `;
+  let hp=100;
+  const bar=document.getElementById("hp");
 
-  let health=100;
-  const bar=document.getElementById("robotHealth");
-  const scene=document.getElementById("battleScene");
-
-  const interval=setInterval(()=>{
-    health-=15;
-    if(health<0) health=0;
-    bar.style.width=health+"%";
-
-    scene.style.background="darkred";
-    setTimeout(()=>scene.style.background="black",150);
-
-    if(health<=0){
-      clearInterval(interval);
-      document.getElementById("battleText").innerText=
-        "💥 The Boss Robot Falls!";
+  const battle=setInterval(()=>{
+    hp-=10;
+    if(hp<0) hp=0;
+    bar.style.width=hp+"%";
+    if(hp<=0){
+      clearInterval(battle);
+      scene.innerText="💥 Boss Defeated!";
       setTimeout(()=>{
         scene.remove();
-        document.getElementById("final").innerText=
-          "🏆 Victory! The planet is free!";
+        document.getElementById("final").innerText="🏆 Planet Liberated!";
       },2000);
     }
   },1000);
 }
 
+function createScene(text){
+  const div=document.createElement("div");
+  div.className="cutscene";
+  div.innerText=text;
+  document.body.appendChild(div);
+  return div;
+}
+
 renderElements();
 </script>
-<br>
-<button onclick="fightRobots()">Fight Robots</button>
+
 </body>
 </html>
