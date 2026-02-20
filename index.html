@@ -1,69 +1,51 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Ruby Saga Revolution</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    body{
-      font-family:Arial;
-      text-align:center;
-      background:black;
-      color:white;
-      padding:20px;
-      transition:background 0.5s;
-    }
-
-    #ruby{font-size:70px;margin:20px;}
-
-    .shake{animation:shake 0.3s infinite;}
-    @keyframes shake{
-      0%{transform:translate(2px,2px);}
-      50%{transform:translate(-2px,-3px);}
-      100%{transform:translate(2px,-2px);}
-    }
-
-    .flash{animation:flash 0.2s infinite alternate;}
-    @keyframes flash{
-      from{background:black;}
-      to{background:purple;}
-    }
-
-    .element{
-      display:inline-block;
-      padding:10px;
-      margin:5px;
-      background:crimson;
-      border-radius:8px;
-      cursor:pointer;
-    }
-
-    .house{
-      font-size:40px;
-      cursor:pointer;
-      margin:10px;
-    }
-
-    #workbench{
-      margin:20px auto;
-      padding:15px;
-      border:2px solid white;
-      width:250px;
-      display:none;
-    }
-
-    #progressBar{
-      width:0%;
-      height:15px;
-      background:lime;
-      margin-top:10px;
-    }
-
-    #progressContainer{
-      width:100%;
-      background:#333;
-      display:none;
-    }
-  </style>
+<title>Ruby Saga Revolution</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body{
+  font-family:Arial;
+  text-align:center;
+  background:black;
+  color:white;
+  padding:20px;
+  transition:background 0.5s;
+}
+#ruby{font-size:70px;margin:20px;}
+.shake{animation:shake 0.3s infinite;}
+@keyframes shake{
+  0%{transform:translate(2px,2px);}
+  50%{transform:translate(-2px,-3px);}
+  100%{transform:translate(2px,-2px);}
+}
+.flash{animation:flash 0.2s infinite alternate;}
+@keyframes flash{
+  from{background:black;}
+  to{background:purple;}
+}
+.element{
+  display:inline-block;
+  padding:10px;
+  margin:5px;
+  background:crimson;
+  border-radius:8px;
+  cursor:pointer;
+}
+.cutscene{
+  position:fixed;
+  top:0;left:0;
+  width:100%;height:100%;
+  background:black;
+  color:white;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  font-size:28px;
+  z-index:9999;
+}
+</style>
 </head>
 <body>
 
@@ -72,23 +54,14 @@
 <h3>Tap Two Elements To Combine</h3>
 <div id="elements"></div>
 <p id="message">The ruby feels unstoppable...</p>
-
-<div id="workbench">
-  <h3>🔧 Ray Gun Workbench</h3>
-  <p id="partsList"></p>
-  <button onclick="assemble()">Assemble Ray Gun</button>
-  <div id="progressContainer">
-    <div id="progressBar"></div>
-  </div>
-</div>
+<p id="final"></p>
 
 <script>
-let inventory=["fire","energy","gravity","dark","water"];
+let inventory=["fire","water","energy","gravity","dark","air"];
 let selected=[];
 let planetStage=false;
-let rayParts=[];
-let armyCount=0;
 let rayBuilt=false;
+let armyCount=0;
 
 function renderElements(){
   const container=document.getElementById("elements");
@@ -104,13 +77,14 @@ function renderElements(){
 
 function selectElement(el){
   if(planetStage && !rayBuilt){
-    addPart(el);
+    startRayCutscene();
     return;
   }
 
   selected.push(el);
   document.getElementById("message").innerText=
     "Selected: "+selected.join(" + ");
+
   if(selected.length===2){
     combine();
     selected=[];
@@ -119,10 +93,16 @@ function selectElement(el){
 
 function combine(){
   const combo=selected.sort().join("-");
+
+  // Expanded crafting tree
   if(combo==="fire-water") addElement("steam");
   else if(combo==="fire-gravity") addElement("lava");
   else if(combo==="lava-water") addElement("obsidian");
   else if(combo==="water-gravity") addElement("wave");
+  else if(combo==="air-water") addElement("storm");
+  else if(combo==="storm-energy") addElement("lightning");
+  else if(combo==="obsidian-energy") addElement("core");
+  else if(combo==="core-dark") addElement("voidcore");
   else if(combo==="energy-fire") addElement("plasma");
   else if(combo==="dark-gravity") addElement("blackhole");
   else if(combo==="energy-plasma") addElement("supercharge");
@@ -142,7 +122,7 @@ function destroyRuby(){
   const ruby=document.getElementById("ruby");
   ruby.classList.add("shake");
   document.body.classList.add("flash");
-  document.getElementById("message").innerText="The Ruby destabilizes...";
+  document.getElementById("message") .innerText="The Ruby destabilizes...";
   setTimeout(()=>{
     ruby.classList.remove("shake");
     document.body.classList.remove("flash");
@@ -160,148 +140,116 @@ function nextPlanet(){
     "🤖 Robots detected. Build a Ray Gun.";
   inventory=["metal","crystal","energy"];
   renderElements();
-  document.getElementById("workbench").style.display="block";
 }
 
-function addPart(part){
-  if(!rayParts.includes(part)){
-    rayParts.push(part);
-    document.getElementById("partsList").innerText=
-      "Parts: "+rayParts.join(", ");
-  }
-}
+function startRayCutscene(){
+  if(rayBuilt) return;
 
-function assemble(){
-  if(rayParts.length<3){
-    document.getElementById("message").innerText=
-      "You need metal, crystal, and energy.";
-    return;
-  }
+  document.body.innerHTML+=`
+    <div class="cutscene" id="rayScene">
+      <div id="rayText">⚙️ Gathering parts...</div>
+    </div>
+  `;
 
-  document.getElementById("message").innerText=
-    "⚙️ Assembling Ray Gun... Robots are watching.";
-  document.getElementById("progressContainer").style.display="block";
+  const steps=[
+    "⚙️ Assembling metal frame...",
+    "💎 Installing crystal core...",
+    "⚡ Charging with energy...",
+    "🔫 Ray Gun Activated!"
+  ];
 
-  let progress=0;
-  const bar=document.getElementById("progressBar");
+  let i=0;
   const interval=setInterval(()=>{
-    progress+=10;
-    bar.style.width=progress+"%";
-    if(progress>=100){
+    i++;
+    if(i<steps.length){
+      document.getElementById("rayText").innerText=steps[i];
+    } else{
       clearInterval(interval);
       rayBuilt=true;
-      document.getElementById("message").innerText=
-        "🔫 Ray Gun Complete!";
-      startRecruitment();
+      setTimeout(()=>{
+        document.getElementById("rayScene").remove();
+        startRecruitCutscene();
+      },1500);
     }
-  },300);
+  },1500);
 }
 
-function startRecruitment(){
+function startRecruitCutscene(){
   document.body.innerHTML+=`
-    <h3>Recruit The Revolution</h3>
-    <div>
-      <span class="house" onclick="recruit()">🏠</span>
-      <span class="house" onclick="recruit()">🏠</span>
-      <span class="house" onclick="recruit()">🏠</span>
+    <div class="cutscene" id="recruitScene">
+      <div id="recruitText">🏠 Visiting villages...</div>
     </div>
-    <p id="armyCount"></p>
-    <button onclick="fightRobots()">Fight Robots</button>
-    <p id="final"></p>
   `;
-}
 
-function recruit(){
-  armyCount++;
-  document.getElementById("armyCount").innerText=
-    "Army Size: "+armyCount;
+  const steps=[
+    "🧑 You speak of freedom...",
+    "👥 People begin to listen...",
+    "⚔️ They join your revolution!",
+    "🚀 Army Ready!"
+  ];
+
+  let i=0;
+  const interval=setInterval(()=>{
+    i++;
+    if(i<steps.length){
+      document.getElementById("recruitText").innerText=steps[i];
+    } else{
+      clearInterval(interval);
+      armyCount=3;
+      setTimeout(()=>{
+        document.getElementById("recruitScene").remove();
+        document.getElementById("message").innerText=
+          "Your army stands ready.";
+      },1500);
+    }
+  },1500);
 }
 
 function fightRobots(){
-  if(!rayBuilt || armyCount < 3){
-    document.getElementById("final").innerText =
-      "You need a Ray Gun and at least 3 recruits.";
+  if(!rayBuilt || armyCount<3){
+    document.getElementById("final").innerText=
+      "You need a Ray Gun and army.";
     return;
   }
 
-  document.body.innerHTML += `
-    <div id="battleScene" style="
-      position:fixed;
-      top:0; left:0;
-      width:100%; height:100%;
-      background:black;
-      color:white;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      justify-content:center;
-      font-size:28px;
-      z-index:9999;
-      overflow:hidden;
-    ">
-      <div id="battleText">⚔️ The Revolution Begins...</div>
-
-      <div style="font-size:70px; margin:20px;">
-        🧑‍🚀🧑‍🚀🧑‍🚀  ⚡  🤖👑
-      </div>
-
-      <div style="width:300px; background:#333; height:20px;">
-        <div id="robotHealth" style="
-          width:100%;
-          height:100%;
-          background:red;
-        "></div>
+  document.body.innerHTML+=`
+    <div id="battleScene" class="cutscene">
+      <div id="battleText">⚔️ The Final Battle Begins...</div>
+      <div style="margin:20px;font-size:60px;">🧑‍🚀🧑‍🚀🧑‍🚀 ⚡ 🤖👑</div>
+      <div style="width:300px;background:#333;height:20px;">
+        <div id="robotHealth" style="width:100%;height:100%;background:red;"></div>
       </div>
     </div>
   `;
 
-  let health = 100;
-  const healthBar = document.getElementById("robotHealth");
-  const battleText = document.getElementById("battleText");
-  const scene = document.getElementById("battleScene");
+  let health=100;
+  const bar=document.getElementById("robotHealth");
+  const scene=document.getElementById("battleScene");
 
-  const battleInterval = setInterval(() => {
+  const interval=setInterval(()=>{
+    health-=15;
+    if(health<0) health=0;
+    bar.style.width=health+"%";
 
-    // Laser flash
-    scene.style.background = "darkred";
-    setTimeout(() => scene.style.background = "black", 150);
+    scene.style.background="darkred";
+    setTimeout(()=>scene.style.background="black",150);
 
-    // Damage robot
-    health -= Math.floor(Math.random() * 15) + 5;
-    if(health < 0) health = 0;
-    healthBar.style.width = health + "%";
-
-    if(health > 60){
-      battleText.innerText = "🔫 Plasma blasts hit the Boss Robot!";
-    } 
-    else if(health > 30){
-      battleText.innerText = "🤖 The Boss Robot is weakening!";
-    } 
-    else if(health > 0){
-      battleText.innerText = "💥 Massive explosions everywhere!";
-      scene.style.transform = "translate(5px,5px)";
-      setTimeout(()=>scene.style.transform="translate(0,0)",100);
-    }
-
-    if(health <= 0){
-      clearInterval(battleInterval);
-      battleText.innerText = "💀 The Boss Robot falls!";
-      healthBar.style.background = "gray";
-
+    if(health<=0){
+      clearInterval(interval);
+      document.getElementById("battleText").innerText=
+        "💥 The Boss Robot Falls!";
       setTimeout(()=>{
-        scene.style.background = "white";
-        setTimeout(()=>{
-          scene.remove();
-          document.getElementById("final").innerText =
-            "🏆 VICTORY! The revolution succeeds. The planet is free!";
-        },500);
+        scene.remove();
+        document.getElementById("final").innerText=
+          "🏆 Victory! The planet is free!";
       },2000);
     }
-
-  }, 1000);
+  },1000);
 }
 
 renderElements();
 </script>
+<br>
+<button onclick="fightRobots()">Fight Robots</button>
 </body>
 </html>
