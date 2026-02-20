@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Ruby Destruction Game</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: linear-gradient(to bottom, #000000, #1a0000);
+      color: white;
+      padding: 20px;
+    }
+
+    h1 {
+      color: crimson;
+    }
+
+    #ruby {
+      font-size: 60px;
+      margin: 20px;
+      transition: transform 0.5s ease;
+    }
+
+    button {
+      margin: 8px;
+      padding: 12px 18px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+    }
+
+    button:hover {
+      opacity: 0.8;
+    }
+
+    #hint {
+      margin-top: 20px;
+      font-style: italic;
+      color: #ffcccb;
+    }
+
+    #message {
+      margin-top: 10px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+<h1>💎 The Indestructible Ruby</h1>
+
+<div id="ruby">💎</div>
+
+<p id="message">This ruby cannot be destroyed... yet.</p>
+
+<h3>Select Two Elements:</h3>
+
+<button onclick="addElement('fire')">🔥 Fire</button>
+<button onclick="addElement('war')">⚔️ War</button>
+<button onclick="addElement('metal')">🪨 Metal</button>
+<button onclick="addElement('energy')">⚡ Energy</button>
+<button onclick="addElement('wind')">🌪 Wind</button>
+
+<br>
+<button onclick="combine()">Combine</button>
+
+<p id="hint"></p>
+
+<script>
+let selected = [];
+
+function addElement(element) {
+  if (selected.length < 2) {
+    selected.push(element);
+    document.getElementById("message").innerText =
+      "Selected: " + selected.join(" + ");
+  }
+}
+
+function combine() {
+  if (selected.length < 2) {
+    document.getElementById("hint").innerText =
+      "You must select two elements!";
+    return;
+  }
+
+  let combo = selected.sort().join("-");
+
+  if (combo === "fire-war") {
+    document.getElementById("hint").innerText =
+      "🔥⚔️ You created CHAOS... but the ruby resists.";
+  }
+  else if (combo === "metal-energy") {
+    document.getElementById("hint").innerText =
+      "⚡🪨 You built a powerful machine... something bigger is forming.";
+  }
+  else if (combo === "energy-war") {
+    document.getElementById("hint").innerText =
+      "⚡⚔️ Ultimate weapon unlocked!";
+      destroyRuby();
+  }
+  else {
+    document.getElementById("hint").innerText =
+      "Nothing happened. Try a different combination.";
+  }
+
+  selected = [];
+}
+
+function destroyRuby() {
+  const ruby = document.getElementById("ruby");
+  ruby.innerText = "💥";
+  ruby.style.transform = "scale(1.5)";
+  document.getElementById("message").innerText =
+    "💥 The Ruby has been destroyed!";
+}
+</script>
+
+</body>
+</html>
