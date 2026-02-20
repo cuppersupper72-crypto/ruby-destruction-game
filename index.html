@@ -218,13 +218,58 @@ function recruit(){
 }
 
 function fightRobots(){
-  if(rayBuilt && armyCount>=3){
-    document.getElementById("final").innerText=
-      "⚔️ With your Ray Gun and army, the robots fall. The planet is saved!";
-  } else{
-    document.getElementById("final").innerText=
+  if(!rayBuilt || armyCount < 3){
+    document.getElementById("final").innerText =
       "You need a Ray Gun and at least 3 recruits.";
+    return;
   }
+
+  document.body.innerHTML += `
+    <div id="battleScene" style="
+      position:fixed;
+      top:0; left:0;
+      width:100%; height:100%;
+      background:black;
+      color:white;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      font-size:30px;
+      z-index:9999;
+    ">
+      <div id="battleText">⚔️ The Revolution Begins...</div>
+      <div id="battleVisual" style="font-size:60px; margin-top:20px;">
+        🧑‍🚀🧑‍🚀🧑‍🚀  ⚡  🤖🤖🤖
+      </div>
+    </div>
+  `;
+
+  let stage = 0;
+
+  const battleSteps = [
+    "🔫 You fire the Ray Gun!",
+    "⚡ Plasma blasts hit the robots!",
+    "🤖 Robots counter attack!",
+    "🛡 Your army pushes forward!",
+    "💥 Massive explosion!",
+    "🏆 The robots are defeated!"
+  ];
+
+  const interval = setInterval(() => {
+    stage++;
+    if(stage < battleSteps.length){
+      document.getElementById("battleText").innerText =
+        battleSteps[stage];
+    } else {
+      clearInterval(interval);
+      setTimeout(() => {
+        document.getElementById("battleScene").remove();
+        document.getElementById("final").innerText =
+          "🏆 Victory! The planet is free thanks to your revolution!";
+      }, 2000);
+    }
+  }, 1500);
 }
 
 renderElements();
